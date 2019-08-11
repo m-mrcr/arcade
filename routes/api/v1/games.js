@@ -16,17 +16,17 @@ router.get("/", function(req, res, next) {
 });
 
 /*  GET one game */
-router.get("/:gameId", function(req, res, next) {
+router.get("/:id", function (req, res, next) {
   Game.findByPk(req.params.gameId)
-  .then(game => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).send(JSON.stringify(games));
-  })
-  .catch(error => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(500).send({error})
-  })
-})
+    .then(game => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).send(JSON.stringify(game));
+    })
+    .catch(error => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(500).send({ error })
+    });
+});
 
 /*  POST new game */
 router.post("/", function(req, res, next) {
@@ -46,5 +46,45 @@ router.post("/", function(req, res, next) {
     });
 });
 
+/*  PATCH a single resource */
+router.put("/:id", function (req, res, next) {
+  Game.update({
+    title: req.body.title,
+    price: req.body.price,
+    releaseYear: req.body.releaseYear,
+    active: req.body.active
+  }
+  {
+    returning: true,
+    where: {
+      id: parseInt(req.params.id)
+    }
+  })
+  .then(([rowsUpdate, [updatedGame]]) => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(202).send(JSON.stringify(updatedGame));
+  })
+  .catch(error => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(500).send({error});
+  });
+});
+
+/* DELETE a single resource */
+router.delete("/:id", function (req, res, next) {
+  Game.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+  .then(game => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(204);
+  })
+  .catch(error => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(500).send({error});
+  });
+});
 
 module.exports = router;
